@@ -139,7 +139,3 @@ The baseline tractogram used in this framework has been adjusted from *1* by con
 2. Tournier et al., MRtrix3: A fast, flexible and open software framework for medical image processing and visualisation, 2019, *NeuroImage* , DOI:10.1016/j.neuroimage.2019.11613
 3. Rolls et al., Automated anatomical labelling atlas 3, 2020, *NeuroImage*, DOI:10.1016/j.neuroimage.2019.116189
 4. Schaefer et al., Local-Global Parcellation of the Human Cerebral Cortex from Intrinsic Functional Connectivity MRI. 2017, *Cerebral Cortex*, DOI:10.1093/cercor/bhx179
-
-
-docker tag arise:dev patrikneuro/arise:0.1
-docker login --username=maryatdocker --email=mary@docker.com
