@@ -1,0 +1,36 @@
+{
+    "@context": "https://w3id.org/codemeta/3.0",
+    "type": "SoftwareSourceCode",
+    "author": [
+        {
+            "id": "_:author_1",
+            "type": "Person",
+            "affiliation": {
+                "type": "Organization",
+                "name": "Queen Square Institute of Neurology, University College London"
+            },
+            "email": "patrik.bey@ucl.ac.uk",
+            "familyName": "Bey",
+            "givenName": "Patrik"
+        }
+    ],
+    "codeRepository": "https://github.com/PatrikBey/ARISE",
+    "dateCreated": "2025-09-14",
+    "dateModified": "2025-09-14",
+    "datePublished": "2025-09-14",
+    "description": "Automated Region of Interest Streamline Extraction (ARISE) software container. The ARISE pipeline creates connectome extraction for two use-cases: 1. extracting streamline based connectomes for two sets of ROI masks 2. Using a single ROI mask, e.g. a pathology lesion mask, to extract the corresponding disconnectome.",
+    "downloadUrl": "https://hub.docker.com/repository/docker/patrikneuro/arise/general",
+    "license": "https://spdx.org/licenses/CC-BY-4.0",
+    "name": "ARISE",
+    "operatingSystem": "Ubuntu 22.04",
+    "programmingLanguage": [
+        "BASH",
+        "Python"
+    ],
+    "relatedLink": "https://hub.docker.com/repository/docker/patrikneuro/arise/general",
+    "releaseNotes": "Initial release",
+    "runtimePlatform": "Docker",
+    "softwareRequirements": "https://www.docker.com/",
+    "version": "0.1",
+    "issueTracker": "https://github.com/PatrikBey/ARISE/issues"
+}
