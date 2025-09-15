@@ -19,15 +19,15 @@
     "dateModified": "2025-09-14",
     "datePublished": "2025-09-14",
     "description": "Automated Region of Interest Streamline Extraction (ARISE) software container. The ARISE pipeline creates connectome extraction for two use-cases: 1. extracting streamline based connectomes for two sets of ROI masks 2. Using a single ROI mask, e.g. a pathology lesion mask, to extract the corresponding disconnectome.",
-    "downloadUrl": "https://hub.docker.com/repository/docker/patrikneuro/arise/general",
+    "downloadUrl": "index.docker.io/patrikneuro/arise@sha256:083c609f42ee6bb4debbe227f33648654cb51aed1f97de8f8284c4b57d3b7d24",
     "license": "https://spdx.org/licenses/CC-BY-4.0",
     "name": "ARISE",
-    "operatingSystem": "Ubuntu 22.04",
+    "operatingSystem": "Linux, MacOS, Windows",
     "programmingLanguage": [
         "BASH",
         "Python"
     ],
-    "relatedLink": "https://hub.docker.com/repository/docker/patrikneuro/arise/general",
+    "relatedLink": "https://github.com/PatrikBey/ARISE/blob/main/README.md",
     "releaseNotes": "Initial release",
     "runtimePlatform": "Docker",
     "softwareRequirements": "https://www.docker.com/",
