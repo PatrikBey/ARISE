@@ -104,6 +104,13 @@ if [[ ${singleseed} != "TRUE" ]] || [[ ${roilist} != "TRUE" ]]; then
     fi
 fi
 
+if [[ -z ${tck_keep} ]]; then
+    tck_keep="True"
+elif [[ ${tck_keep} != "True" ]]; then
+    log_msg "UPDATE | <<tck_keep>> set to False, deleting tract output."
+fi
+
+
 ###########################
 #           WIP           #
 ###########################
@@ -153,6 +160,10 @@ if [[ ${singleseed} = "TRUE" ]]; then
     # ---- clean up ---- #
     if [[ -z ${NOCLEANUP} ]]; then
         rm -rf ${TempDir}
+    fi
+
+    if [[ ${tck_keep} != "True" ]]; then
+        rm -f ${OutDir}/$( basename ${mask%.nii.gz} )_subset.tck
     fi
 
 fi
