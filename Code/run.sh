@@ -116,6 +116,14 @@ else
     log_msg "UPDATE | using default tractogram"
     Tracts="${TEMPLATEDIR}/Tractograms/dTOR_full_tractogram.tck"
 fi
+
+if [[ -z ${tck_keep} ]]; then
+    tck_keep="True"
+elif [[ ${tck_keep} != "True" ]]; then
+    log_msg "UPDATE | <<tck_keep>> set to False, deleting tract output."
+fi
+
+
 ###########################
 #           WIP           #
 ###########################
@@ -165,6 +173,10 @@ if [[ ${singleseed} = "TRUE" ]]; then
     # ---- clean up ---- #
     if [[ -z ${NOCLEANUP} ]]; then
         rm -rf ${TempDir}
+    fi
+
+    if [[ ${tck_keep} != "True" ]]; then
+        rm -f ${OutDir}/$( basename ${mask%.nii.gz} )_subset.tck
     fi
 
 fi
