@@ -104,6 +104,18 @@ if [[ ${singleseed} != "TRUE" ]] || [[ ${roilist} != "TRUE" ]]; then
     fi
 fi
 
+if [[ ! -z ${Tracts} ]]; then
+    log_msg "UPDATE | using custom tractogram ${Tracts}"
+    if [[ ! -f "${Path}/${Tracts}" ]]; then
+        log_msg "ERROR | custom tractogram ${Tracts} not found in /data directory."
+        show_usage
+    else
+        Tracts="${Path}/${Tracts}"
+    fi
+else
+    log_msg "UPDATE | using default tractogram"
+    Tracts="${TEMPLATEDIR}/Tractograms/dTOR_full_tractogram.tck"
+fi
 ###########################
 #           WIP           #
 ###########################
@@ -142,7 +154,7 @@ if [[ ${singleseed} = "TRUE" ]]; then
     # ---- extract disconnectome ---- #
     get_temp_dir ${OutDir}
 
-    get_tract_subset ${mask}
+    get_tract_subset ${mask} "${mask%.nii.gz}_subset.tck" ${Tracts}
 
     get_disonnectome ${OutDir}/$( basename ${mask%.nii.gz} )_subset.tck ${Atlas} ${disc_file}
 

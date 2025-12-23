@@ -221,13 +221,19 @@ get_tract_subset() {
     # return reduced tract subset for given lesion mask
     # $1 lesion mask
     # $2 output filename
+    # $3 tractogram
     if [[ -z ${2} ]]; then
         out_file="${1%.nii.gz}_subset.tck"
     else
         out_file=${2}
     fi
+    if [[ -z ${3} ]]; then
+        tck="${TEMPLATEDIR}/Tractograms/dTOR_full_tractogram.tck"
+    else
+        tck=${3}
+    fi
     tckedit -force \
-        ${TEMPLATEDIR}/Tractograms/dTOR_full_tractogram.tck \
+        ${tck} \
         -include ${1} \
         ${OutDir}/$( basename ${out_file} )
 }

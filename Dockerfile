@@ -37,30 +37,27 @@ libxext6 \
 libxpm-dev \
 libxt6 \
 libfreetype6 \
-libglib2.0 \
 gcc \
 g++ \
 libglu1 \
 file \
 dc \
-mesa-utils \
-pulseaudio \
-libquadmath0 \
-libgtk2.0-0 \
-firefox \
+libgfortran5 \
 figlet \
 unzip && \
 apt-get clean && \
 rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
-RUN wget -q https://repo.continuum.io/miniconda/Miniconda2-4.7.12.1-Linux-x86_64.sh && \
-    bash Miniconda2-4.7.12.1-Linux-x86_64.sh -b -p /usr/local/miniconda && \
-    rm Miniconda2-4.7.12.1-Linux-x86_64.sh
+RUN wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
+    bash Miniconda3-latest-Linux-x86_64.sh -b -p /usr/local/miniconda && \
+    rm Miniconda3-latest-Linux-x86_64.sh
 
 ENV PATH="/usr/local/miniconda/bin:$PATH"
 
-RUN conda config --add channels conda-forge && \
+RUN conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main && \
+    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r && \
+    conda config --add channels conda-forge && \
     conda install -y mkl=2019.3 mkl-service=2.0.2 numpy=1.16.4 nibabel=2.4.1 pandas=0.24.2 && sync && \
     conda clean -tipsy && sync 
 
@@ -78,7 +75,7 @@ ENV PATH="/opt/mrtrix3/bin:$PATH"
 # ---- install FSL for processing ---- #
 
 RUN wget https://fsl.fmrib.ox.ac.uk/fsldownloads/fslconda/releases/fslinstaller.py && \
-    python2 ./fslinstaller.py -d /usr/local/fsl/
+    python ./fslinstaller.py -d /usr/local/fsl/
 
 ENV FSLDIR=/usr/local/fsl
 ENV PATH="${FSLDIR}/bin:${PATH}"
