@@ -33,7 +33,7 @@ The corresponding docker container can be accessed on <a href="https://hub.docke
 
 
 ```bash
-docker pull patrikneuro/arise:0.1
+docker pull patrikneuro/arise:0.2
 ```
 
 ### USAGE - ROI2ROI
@@ -129,6 +129,7 @@ Currently integrated *atlas* parcellations include:
 
 1. AAL3v1, 
 2. Schaefer2018, 
+3. HCP-MMP1
 
 The baseline tractogram used in this framework has been adjusted from *1* by converting it into a MRTrix3 *2* compatible .tck file format.
 
@@ -139,3 +140,4 @@ The baseline tractogram used in this framework has been adjusted from *1* by con
 2. Tournier et al., MRtrix3: A fast, flexible and open software framework for medical image processing and visualisation, 2019, *NeuroImage* , DOI:10.1016/j.neuroimage.2019.11613
 3. Rolls et al., Automated anatomical labelling atlas 3, 2020, *NeuroImage*, DOI:10.1016/j.neuroimage.2019.116189
 4. Schaefer et al., Local-Global Parcellation of the Human Cerebral Cortex from Intrinsic Functional Connectivity MRI. 2017, *Cerebral Cortex*, DOI:10.1093/cercor/bhx179
+5. Glasser, M., Coalson, T., Robinson, E. et al. A multi-modal parcellation of human cerebral cortex. 2016, *Nature* DOI:10.1038/nature18933

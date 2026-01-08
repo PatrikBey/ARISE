@@ -58,7 +58,8 @@ ENV PATH="/usr/local/miniconda/bin:$PATH"
 RUN conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main && \
     conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r && \
     conda config --add channels conda-forge && \
-    conda install -y mkl=2019.3 mkl-service=2.0.2 numpy=1.16.4 nibabel=2.4.1 pandas=0.24.2 && sync && \
+    conda config --set solver libmamba && \
+    conda install -y --no-update-deps mkl numpy=1.16.4 nibabel=2.4.1 pandas=0.24.2 && sync && \
     conda clean -tipsy && sync 
 
 # ---- install mrtrix3 for tractography ---- #
