@@ -27,6 +27,7 @@
 # 4. get_temp_dir
 # 5. progress_bar
 # 6. contains_string
+# 7. get_dim_info
 
 
 
@@ -41,7 +42,7 @@ show_usage() {
 
     echo "| ARISE | Automated Regions of Interest Streamline Extraction
           author:       Patrik Bey
-          last update:  2025/07/29" | lolcat
+          last update:  2026/01/10" | lolcat
 
     cat <<EOF
 
@@ -154,4 +155,17 @@ contains_string() {
     else
         echo "FALSE"
     fi
+}
+
+# ---- 7. get_dim_info ---- #
+GetDimInfo () {
+# get image dimension from input header
+# and return as $ImgDim
+    _dim1="$( fslval ${1} dim1)"
+    len1="$((${#_dim1}-1))"
+    _dim2="$( fslval ${1} dim2)"
+    len2="$((${#_dim2}-1))"
+    _dim3="$( fslval ${1} dim3)"
+    len3="$((${#_dim3}-1))"
+    export ImgDim=${_dim1:0:${len1}}"x"${_dim2:0:${len2}}"x"${_dim3:0:${len3}}
 }

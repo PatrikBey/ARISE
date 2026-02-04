@@ -35,17 +35,60 @@
 
 # ---- 1. get_parcellation ---- #
 
+# get_parcellation() {
+#     #
+#     # $1 input file list name || e.g. ${Seed}
+#     #
+#     file_list=$(ls "${Path}/${1}/masks")
+#     get_file_count "${file_list}"
+#     cp ${TEMPLATEDIR}/Atlas/Empty.nii.gz "${TempDir}/${1}_parc.nii.gz"
+
+#     touch ${OutDir}/${1}/lut.txt
+#     echo "ID ROI" >> ${OutDir}/${1}/lut.txt
+#     count=1
+#     for file in ${file_list}; do
+#         mask="${Path}/${1}/masks/${file}"
+#         cp $mask "${TempDir}/tmp.nii.gz"
+#         fslmaths "${TempDir}/tmp.nii.gz" -bin "${TempDir}/tmp.nii.gz"
+#         fslmaths "${TempDir}/tmp.nii.gz" \
+#             -mul ${count} \
+#             "${TempDir}/tmp.nii.gz"
+#         fslmaths "${TempDir}/${1}_parc.nii.gz" \
+#             -add "${TempDir}/tmp.nii.gz" \
+#             "${TempDir}/${1}_parc.nii.gz"
+#         progress_bar $count ${filecount}
+#         echo "${count} ${file%.nii.gz}" >> ${OutDir}/${1}/lut.txt
+#         count=$((count+1))
+#     done
+#     cp "${TempDir}/${1}_parc.nii.gz" "${OutDir}/${1}/parcellation.nii.gz"
+# }
+
+
+
+
 get_parcellation() {
     #
     # $1 input file list name || e.g. ${Seed}
     #
-    file_list=$(ls "${Path}/${1}/masks")
-    get_file_count "${file_list}"
+    file_list=($(ls "${Path}/${1}/masks"))
+    get_file_count "${file_list[*]}"
     cp ${TEMPLATEDIR}/Atlas/Empty.nii.gz "${TempDir}/${1}_parc.nii.gz"
+    GetDimInfo ${TEMPLATEDIR}/Atlas/Empty.nii.gz
+    temp_dim=$ImgDim
+    GetDimInfo "${Path}/${1}/masks/${file_list[0]}"
+    if [ "$temp_dim" != "$ImgDim" ]; then
+        ${FSLDIR}/bin/flirt \
+                -in "${TempDir}/${1}_parc.nii.gz" \
+                -ref "${Path}/${1}/masks/${file_list[0]}" \
+                -out "${TempDir}/${1}_parc.nii.gz" \
+                -applyxfm \
+                -usesqform \
+                -interp nearestneighbour
+    fi
     touch ${OutDir}/${1}/lut.txt
     echo "ID ROI" >> ${OutDir}/${1}/lut.txt
     count=1
-    for file in ${file_list}; do
+    for file in ${file_list[@]}; do
         mask="${Path}/${1}/masks/${file}"
         cp $mask "${TempDir}/tmp.nii.gz"
         fslmaths "${TempDir}/tmp.nii.gz" -bin "${TempDir}/tmp.nii.gz"
@@ -61,6 +104,8 @@ get_parcellation() {
     done
     cp "${TempDir}/${1}_parc.nii.gz" "${OutDir}/${1}/parcellation.nii.gz"
 }
+
+
 
 # ---- 2. get_tract_mask ---- #
 get_tract_mask() {

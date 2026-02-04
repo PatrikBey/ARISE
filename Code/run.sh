@@ -220,9 +220,9 @@ if [[ ${roi2roi} = "TRUE" ]]; then
     # ---- prepare connectomes ---- #
 
     log_msg "UPDATE | extracting subset connectome"
-    get_roi2roi_sc
+    get_roi2roi_sc ${Tracts}
     log_msg "UPDATE | extracting full connectome"
-    get_full_sc
+    get_full_sc ${Tracts}
     get_lut ${Seed} ${Target}
     add_lut_sc
 
