@@ -95,7 +95,7 @@ if [[ $(contains_string "${Target}" ",") = "TRUE" ]]; then
     roilist="TRUE"
 fi
 
-if [[ ${singleseed} != "TRUE" ]] || [[ ${roilist} != "TRUE" ]]; then
+if [[ ${singleseed} = "TRUE" ]] || [[ ${roilist} = "TRUE" ]]; then
     if [[ ! -f "${TEMPLATEDIR}/Atlas/${Atlas}.nii.gz" ]]; then
         log_msg "ERROR | atlas ${Atlas} not found in template directory."
         show_usage
@@ -114,7 +114,7 @@ if [[ ! -z ${Tracts} ]]; then
     fi
 else
     log_msg "UPDATE | using default tractogram"
-    Tracts="${TEMPLATEDIR}/Tractograms/dTOR_full_tractogram.tck"
+    Tracts="${TEMPLATEDIR}/Tractograms/HCP422_2_million.tck"
 fi
 
 if [[ -z ${tck_keep} ]]; then
