@@ -61,7 +61,8 @@ FROM ubuntu:22.04
 # ---- Metadata ---- #
 LABEL name="ARISE"
 LABEL maintainer="Patrik Bey <patrik.bey@ucl.ac.uk>"
-LABEL version="0.3"
+LABEL version="0.4"
+LABEL versionupdate="integrating inverse node volume normatlization, re-using Elias et al. 2024 tractogram template."
 LABEL description="Automated Region of Interest Streamline Extraction (ARISE)"
 LABEL url="https://github.com/PatrikBey/ARISE"
 

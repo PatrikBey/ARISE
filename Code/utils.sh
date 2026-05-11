@@ -64,13 +64,17 @@ show_usage() {
                         {optional} | [represents columns in connectivity matrix]
 
     <<tracts>>      tract file path relative to /data
-                        {optional} | [default: dTOR_full_tractogram.tck (Elias et al. (2024))]
+                        {optional} | [default: dTOR_2m_tractogram.tck (Elias et al. (2024))]
     
     <<atlas>>       Atlas name to use for connectome preparation.
                         {optional} | [default: AAL3]
 
     <<cleanup>>         boolean whether to remove temporary files
                         {optional} | [default: True]
+
+    <<tck_keep>>    boolean whether to keep intermediate tractogram files
+                        {optional} | [default: False]
+                        
 
     --- input ---
 

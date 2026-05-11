@@ -114,7 +114,9 @@ if [[ ! -z ${Tracts} ]]; then
     fi
 else
     log_msg "UPDATE | using default tractogram"
-    Tracts="${TEMPLATEDIR}/Tractograms/HCP422_2_million.tck"
+    # Tracts="${TEMPLATEDIR}/Tractograms/HCP422_2_million.tck"
+    Tracts="${TEMPLATEDIR}/Tractograms/dTOR_2m_tractogram.tck"
+
 fi
 
 if [[ -z ${tck_keep} ]]; then

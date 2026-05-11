@@ -161,7 +161,7 @@ get_roi2roi_sc() {
     # 
     # $1 tractogram input file
     if [[ -z ${1} ]]; then
-        tck="${TEMPLATEDIR}/Tractograms/dTOR_full_tractogram.tck"
+        tck="${TEMPLATEDIR}/Tractograms/dTOR_2m_tractogram.tck"
     else
         tck=${1}
     fi
@@ -177,7 +177,7 @@ get_roi2roi_sc() {
         "${TempDir}/assignments.txt" \
         "${OutDir}/tracts_subset.tck" -nodes "1,2"
     # ---- 3. extract connectome from subset ---- #
-    tck2connectome -force -symmetric -zero_diagonal \
+    tck2connectome -force -symmetric -zero_diagonal -scale_invnodevol \
         "${OutDir}/tracts_subset.tck" \
         "${OutDir}/parcellation.nii.gz"  \
         "${OutDir}/sc.tsv"
@@ -190,18 +190,18 @@ get_full_sc() {
     #
     # $1 tractogram input file
     if [[ -z ${1} ]]; then
-        tck="${TEMPLATEDIR}/Tractograms/dTOR_full_tractogram.tck"
+        # tck="${TEMPLATEDIR}/Tractograms/HCP422_2_million.tck"
+        tck="${TEMPLATEDIR}/Tractograms/dTOR_2m_tractogram.tck"
     else
         tck=${1}
     fi
     # ---- 1. get full connectome ---- #
-    tck2connectome -force -symmetric -zero_diagonal -quiet \
+    tck2connectome -force -symmetric -zero_diagonal -quiet -scale_invnodevol \
         "${tck}" \
         "${OutDir}/parcellation.nii.gz"  \
         "${OutDir}/sc_full.tsv"
 
 }	
-
 
 # ---- 6. get_lut ---- #
 get_lut() {
@@ -236,7 +236,7 @@ add_lut_sc() {
     sc_files=$(ls ${OutDir}/sc*.tsv)
     for file in ${sc_files}; do
         filename=$( basename ${file%.tsv})
-        python -c "import numpy; rois = numpy.genfromtxt('${TempDir}/rois.txt', dtype='str'); sc = numpy.genfromtxt('${file}', dtype='int'); out = numpy.concatenate((rois[:,None], sc.astype(str)), axis=1); rois = ['ROIs'] + rois.tolist(); out = numpy.vstack((rois, out)); numpy.savetxt('${OutDir}/${filename}.tsv', out, fmt='%s', delimiter='\t')"
+        python -c "import numpy; rois = numpy.genfromtxt('${TempDir}/rois.txt', dtype='str'); sc = numpy.genfromtxt('${file}', dtype='float'); out = numpy.concatenate((rois[:,None], sc.astype(str)), axis=1); rois = ['ROIs'] + rois.tolist(); out = numpy.vstack((rois, out)); numpy.savetxt('${OutDir}/${filename}.tsv', out, fmt='%s', delimiter='\t')"
     done
 }
 
@@ -273,7 +273,7 @@ get_tract_subset() {
         out_file=${2}
     fi
     if [[ -z ${3} ]]; then
-        tck="${TEMPLATEDIR}/Tractograms/dTOR_full_tractogram.tck"
+        tck="${TEMPLATEDIR}/Tractograms/dTOR_2m_tractogram.tck"
     else
         tck=${3}
     fi
@@ -306,7 +306,7 @@ get_disonnectome() {
     else
         out_file=${3}
     fi
-    tck2connectome -force -symmetric -zero_diagonal -quiet \
+    tck2connectome -force -symmetric -zero_diagonal -quiet -scale_invnodevol\
         "${tck}" \
         "${atlas}"  \
         "${out_file}"
@@ -318,7 +318,7 @@ add_lut_disconnectome() {
     # $1 Atlas name
     # $2 disconnectome file
     # tail -n +1 ${TEMPLATEDIR}/Atlas/${Atlas}.txt >> ${TempDir}/rois.txt
-    python -c "import numpy; rois = numpy.genfromtxt('${TEMPLATEDIR}/Atlas/${1}_ROIs.txt', dtype='str'); sc = numpy.genfromtxt('${2}', dtype='int'); out = numpy.concatenate((rois[:,None], sc.astype(str)), axis=1); rois = ['ROIs'] + rois.tolist(); out = numpy.vstack((rois, out)); numpy.savetxt('${2}', out, fmt='%s', delimiter='\t')"
+    python -c "import numpy; rois = numpy.genfromtxt('${TEMPLATEDIR}/Atlas/${1}_ROIs.txt', dtype='str'); sc = numpy.genfromtxt('${2}', dtype='float'); out = numpy.concatenate((rois[:,None], sc.astype(str)), axis=1); rois = ['ROIs'] + rois.tolist(); out = numpy.vstack((rois, out)); numpy.savetxt('${2}', out, fmt='%s', delimiter='\t')"
 
 }
 
