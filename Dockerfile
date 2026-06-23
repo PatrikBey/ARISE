@@ -7,19 +7,19 @@
 # Stage 2: Final runtime image with MRtrix3 + FSL + Python
 #
 # Build:
-#   docker build -f DOCKERFILE -t arise:0.2 .
+#   docker build -f DOCKERFILE -t arise:0.5 .
 #
 # Run (disconnectome):
 #   docker run -v /path/to/study:/data \
 #       -e Seed="lesion_mask.nii.gz" \
 #       -e Atlas="AAL3v1" \
-#       arise:0.2
+#       arise:0.5
 #
 # Run (ROI-to-ROI):
 #   docker run -v /path/to/study:/data \
 #       -e Seed="SeedROIs" \
 #       -e Target="TargetROIs" \
-#       arise:0.2
+#       arise:0.5
 #
 # ============================================================
 

@@ -112,23 +112,29 @@ get_tract_mask() {
     # $1 seed name
     # $2 target name
 
-    fslmaths "${TempDir}/${2}_parc.nii.gz" -bin \
-        "${TempDir}/${2}_parc_bin.nii.gz"
+    if [[ "${1}" == "${2}" ]]; then
+        # seed == target: produce a single binary mask (value 1)
+        fslmaths "${TempDir}/${1}_parc.nii.gz" -bin \
+            "${OutDir}/TractMask.nii.gz"
+    else
+        fslmaths "${TempDir}/${2}_parc.nii.gz" -bin \
+            "${TempDir}/${2}_parc_bin.nii.gz"
 
-    fslmaths "${TempDir}/${2}_parc_bin.nii.gz" \
-        -add 1 \
-        "${TempDir}/${2}_parc_bin2.nii.gz"
-    
-    fslmaths "${TempDir}/${2}_parc_bin2.nii.gz" \
-        -mul "${TempDir}/${2}_parc_bin.nii.gz" \
-        "${TempDir}/${2}_parc_bin2.nii.gz"
-    
-    fslmaths "${TempDir}/${1}_parc.nii.gz" -bin \
-        "${TempDir}/${1}_parc_bin.nii.gz"
-    
-    fslmaths "${TempDir}/${1}_parc_bin.nii.gz" \
-        -add "${TempDir}/${2}_parc_bin2.nii.gz" \
-        "${OutDir}/TractMask.nii.gz"
+        fslmaths "${TempDir}/${2}_parc_bin.nii.gz" \
+            -add 1 \
+            "${TempDir}/${2}_parc_bin2.nii.gz"
+        
+        fslmaths "${TempDir}/${2}_parc_bin2.nii.gz" \
+            -mul "${TempDir}/${2}_parc_bin.nii.gz" \
+            "${TempDir}/${2}_parc_bin2.nii.gz"
+        
+        fslmaths "${TempDir}/${1}_parc.nii.gz" -bin \
+            "${TempDir}/${1}_parc_bin.nii.gz"
+        
+        fslmaths "${TempDir}/${1}_parc_bin.nii.gz" \
+            -add "${TempDir}/${2}_parc_bin2.nii.gz" \
+            "${OutDir}/TractMask.nii.gz"
+    fi
 
 }
 
@@ -137,20 +143,24 @@ create_full_parc() {
     #
     # $1 seed name
     # $2 target name
-    #    
-    file_list=$(ls "${Path}/${1}/masks")
-    get_file_count "${file_list}"
-    fslmaths "${OutDir}/${2}/parcellation.nii.gz" \
-        -add ${filecount} \
-        "${OutDir}/parcellation.nii.gz"
+    #
+    if [[ "${1}" == "${2}" ]]; then
+        cp "${OutDir}/${1}/parcellation.nii.gz" "${OutDir}/parcellation.nii.gz"
+    else
+        file_list=$(ls "${Path}/${1}/masks")
+        get_file_count "${file_list}"
+        fslmaths "${OutDir}/${2}/parcellation.nii.gz" \
+            -add ${filecount} \
+            "${OutDir}/parcellation.nii.gz"
 
-    fslmaths "${OutDir}/parcellation.nii.gz" -mul \
-        "${TempDir}/${2}_parc_bin.nii.gz" \
-        "${OutDir}/parcellation.nii.gz"
-    
-    fslmaths "${OutDir}/parcellation.nii.gz" \
-        -add "${OutDir}/${1}/parcellation.nii.gz" \
-        "${OutDir}/parcellation.nii.gz"
+        fslmaths "${OutDir}/parcellation.nii.gz" -mul \
+            "${TempDir}/${2}_parc_bin.nii.gz" \
+            "${OutDir}/parcellation.nii.gz"
+        
+        fslmaths "${OutDir}/parcellation.nii.gz" \
+            -add "${OutDir}/${1}/parcellation.nii.gz" \
+            "${OutDir}/parcellation.nii.gz"
+    fi
 
 }
 
@@ -165,22 +175,43 @@ get_roi2roi_sc() {
     else
         tck=${1}
     fi
-    # ---- 1. get tract assignments ---- #
-    tck2connectome -force -symmetric -zero_diagonal -quiet \
-        "${tck}" \
-        "${OutDir}/TractMask.nii.gz"  \
-        -out_assignments "${TempDir}/assignments.txt" \
-        "${TempDir}/tmp.tsv"
-    # ---- 2. extract tract subset ---- #
-    connectome2tck -force -exclusive -quiet -files single \
-        "${tck}" \
-        "${TempDir}/assignments.txt" \
-        "${OutDir}/tracts_subset.tck" -nodes "1,2"
-    # ---- 3. extract connectome from subset ---- #
-    tck2connectome -force -symmetric -zero_diagonal -scale_invnodevol \
-        "${OutDir}/tracts_subset.tck" \
-        "${OutDir}/parcellation.nii.gz"  \
-        "${OutDir}/sc.tsv"
+
+    if [[ "${Seed}" == "${Target}" ]]; then
+        # ---- seed == target: use tckedit inclusion approach ---- #
+        # ---- 1. extract tract subset via inclusion mask ---- #
+        tckedit -force -quiet \
+            "${tck}" \
+            -include "${OutDir}/TractMask.nii.gz" \
+            "${OutDir}/tracts_subset.tck"
+        # ---- 2. extract connectome from subset (parcellation) ---- #
+        tck2connectome -force -symmetric -zero_diagonal -scale_invnodevol \
+            "${OutDir}/tracts_subset.tck" \
+            "${OutDir}/parcellation.nii.gz" \
+            "${OutDir}/sc.tsv"
+        # ---- 3. extract connectome from subset (atlas) ---- #
+        tck2connectome -force -symmetric -zero_diagonal -scale_invnodevol \
+            "${OutDir}/tracts_subset.tck" \
+            "${Atlas}" \
+            "${OutDir}/sc_full.tsv"
+    else
+        # ---- seed != target: use assignment-based approach ---- #
+        # ---- 1. get tract assignments ---- #
+        tck2connectome -force -symmetric -zero_diagonal -quiet \
+            "${tck}" \
+            "${OutDir}/TractMask.nii.gz"  \
+            -out_assignments "${TempDir}/assignments.txt" \
+            "${TempDir}/tmp.tsv"
+        # ---- 2. extract tract subset ---- #
+        connectome2tck -force -exclusive -quiet -files single \
+            "${tck}" \
+            "${TempDir}/assignments.txt" \
+            "${OutDir}/tracts_subset.tck" -nodes "1,2"
+        # ---- 3. extract connectome from subset ---- #
+        tck2connectome -force -symmetric -zero_diagonal -scale_invnodevol \
+            "${OutDir}/tracts_subset.tck" \
+            "${OutDir}/parcellation.nii.gz"  \
+            "${OutDir}/sc.tsv"
+    fi
 }
 
 # ---- 5. get_full_sc ---- #
@@ -211,7 +242,9 @@ get_lut() {
     # $1 seed name
     # $2 target name
     cp ${OutDir}/${1}/lut.txt ${TempDir}/lut.txt
-    awk FNR!=1 ${OutDir}/${2}/lut.txt >> ${TempDir}/lut.txt
+    if [[ "${1}" != "${2}" ]]; then
+        awk FNR!=1 ${OutDir}/${2}/lut.txt >> ${TempDir}/lut.txt
+    fi
     cut -d" " -f2- ${TempDir}/lut.txt > ${TempDir}/lut_rois.txt
     awk -F'\t' -v OFS='\t' '
     NR == 1 {print "ID", $0; next}
@@ -234,9 +267,21 @@ add_lut_sc() {
         # add lut to sc files
     tail -n +2 "${TempDir}/lut_rois.txt" >> "${TempDir}/rois.txt"
     sc_files=$(ls ${OutDir}/sc*.tsv)
+    atlas_name=$( basename ${Atlas%.nii.gz} )
     for file in ${sc_files}; do
         filename=$( basename ${file%.tsv})
-        python -c "import numpy; rois = numpy.genfromtxt('${TempDir}/rois.txt', dtype='str'); sc = numpy.genfromtxt('${file}', dtype='float'); out = numpy.concatenate((rois[:,None], sc.astype(str)), axis=1); rois = ['ROIs'] + rois.tolist(); out = numpy.vstack((rois, out)); numpy.savetxt('${OutDir}/${filename}.tsv', out, fmt='%s', delimiter='\t')"
+        # when seed == target, sc_full.tsv is built against the Atlas parcellation,
+        # so use the Atlas-specific ROI labels instead of the seed LUT
+        if [[ "${Seed}" == "${Target}" && "${filename}" == "sc_full" ]]; then
+            if [[ -f "${TEMPLATEDIR}/Atlas/${atlas_name}_ROIs.txt" ]]; then
+                rois_file="${TEMPLATEDIR}/Atlas/${atlas_name}_ROIs.txt"
+            else
+                rois_file="/data/${atlas_name}_ROIs.txt"
+            fi
+        else
+            rois_file="${TempDir}/rois.txt"
+        fi
+        python -c "import numpy; rois = numpy.genfromtxt('${rois_file}', dtype='str'); sc = numpy.genfromtxt('${file}', dtype='float'); out = numpy.concatenate((rois[:,None], sc.astype(str)), axis=1); rois = ['ROIs'] + rois.tolist(); out = numpy.vstack((rois, out)); numpy.savetxt('${OutDir}/${filename}.tsv', out, fmt='%s', delimiter='\t')"
     done
 }
 
@@ -318,7 +363,12 @@ add_lut_disconnectome() {
     # $1 Atlas name
     # $2 disconnectome file
     # tail -n +1 ${TEMPLATEDIR}/Atlas/${Atlas}.txt >> ${TempDir}/rois.txt
-    python -c "import numpy; rois = numpy.genfromtxt('${TEMPLATEDIR}/Atlas/${1}_ROIs.txt', dtype='str'); sc = numpy.genfromtxt('${2}', dtype='float'); out = numpy.concatenate((rois[:,None], sc.astype(str)), axis=1); rois = ['ROIs'] + rois.tolist(); out = numpy.vstack((rois, out)); numpy.savetxt('${2}', out, fmt='%s', delimiter='\t')"
+    if [[ -f "${TEMPLATEDIR}/Atlas/${1}_ROIs.txt" ]]; then
+        rois_file="${TEMPLATEDIR}/Atlas/${1}_ROIs.txt"
+    else
+        rois_file="/data/${1}_ROIs.txt"
+    fi
+    python -c "import numpy; rois = numpy.genfromtxt('${rois_file}', dtype='str'); sc = numpy.genfromtxt('${2}', dtype='float'); out = numpy.concatenate((rois[:,None], sc.astype(str)), axis=1); rois = ['ROIs'] + rois.tolist(); out = numpy.vstack((rois, out)); numpy.savetxt('${2}', out, fmt='%s', delimiter='\t')"
 
 }
 

@@ -11,7 +11,7 @@
 # | Affiliation | Queen Square Institute of Neurology, University College London |
 # | Email | patrik.bey@ucl.ac.uk |
 #
-# | last update | 2025.07.29 |
+# | last update | 2026.06.23 |
 #
 #
 #
@@ -42,7 +42,7 @@ show_usage() {
 
     echo "| ARISE | Automated Regions of Interest Streamline Extraction
           author:       Patrik Bey
-          last update:  2026/01/10" | lolcat
+          last update:  2026/06/23" | lolcat
 
     cat <<EOF
 
@@ -50,30 +50,57 @@ show_usage() {
 
     docker run \
         -v /PATH/TO/STUDYFOLDER:/data \
-        -e seed="SeedROIs" \
-        -e target="TargetROIs" \
-        roi2roi
+        -e Seed="ROIMASK.nii.gz" \
+        arise:0.5
 
     --- variables ---
 
-    <<seed>>        name of set of ROIs to use as initial ROIs for connectivity
-                        {required} | [represents rows in conenctivity matrix]
+    <<Seed>>        {required}
+                    seed input — three accepted forms:
+                      - single NIfTI mask file relative to /data
+                            → disconnectome mode
+                            e.g. -e Seed="lesion.nii.gz"
+                      - directory (relative to /data) containing a masks/ subfolder
+                            → ROI2ROI mode
+                            e.g. -e Seed="SeedROIs"
+                      - comma-separated list of ROI names
+                            → ROI2ROI mode
+                            e.g. -e Seed="ROI1,ROI2"
 
-    <<target>>      name of set of ROIs to use as secondary ROIs 
-                    for connectivity
-                        {optional} | [represents columns in connectivity matrix]
+    <<Target>>      {optional} [default: same as Seed]
+                    target ROI set for ROI2ROI connectivity.
+                    accepts a directory or comma-separated list (same as Seed).
+                    ignored in disconnectome mode.
 
-    <<tracts>>      tract file path relative to /data
-                        {optional} | [default: dTOR_2m_tractogram.tck (Elias et al. (2024))]
-    
-    <<atlas>>       Atlas name to use for connectome preparation.
-                        {optional} | [default: AAL3]
+    <<Atlas>>       {optional} [default: AAL3v1]
+                    atlas name, or comma-separated list of atlas names,
+                    for disconnectome extraction.
+                    each name must match a <name>.nii.gz file in the
+                    container template directory or in /data.
+                    a separate labelled .tsv is produced per atlas.
+                    e.g. -e Atlas="AAL3v1,HCPex,Schaefer2018-400"
 
-    <<cleanup>>         boolean whether to remove temporary files
-                        {optional} | [default: True]
+    <<Tracts>>      {optional} [default: dTOR_2m_tractogram.tck (Elias et al. 2024)]
+                    path to a custom tractogram file, relative to /data.
+                    e.g. -e Tracts="sub-01/tractogram.tck"
 
-    <<tck_keep>>    boolean whether to keep intermediate tractogram files
-                        {optional} | [default: False]
+    <<OutDir>>      {optional} [default: /data/arise]
+                    output directory path inside the container.
+                    e.g. -e OutDir="/data/arise/sub-01"
+
+    <<tck_keep>>    {optional} [default: True]
+                    set to False to delete the intermediate tract subset
+                    file after disconnectome extraction.
+
+    <<NOCLEANUP>>   {optional} [default: unset]
+                    set to any value to retain the temporary working
+                    directory after the pipeline completes.
+                    e.g. -e NOCLEANUP=1
+
+    <<CLUSTER>>     {optional} [default: unset]
+                    set to "true" to suppress coloured log output,
+                    suitable for cluster / HPC environments.
+                    e.g. -e CLUSTER="true"
                         
 
     --- input ---

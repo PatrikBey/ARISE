@@ -5,13 +5,13 @@
 #
 #
 # | ARISE | Automated Regions of Interest Streamline Extraction | 
-# | Version | 0.1 |
+# | Version | 0.5 |
 #
 # | Author | Bey, Patrik |
 # | Affiliation | Queen Square Institute of Neurology, University College London |
 # | Email | patrik.bey@ucl.ac.uk |
 #
-# | last update | 2025.09.14 |
+# | last update | 2026.06.23 |
 #
 #
 #
@@ -69,7 +69,7 @@ elif [[ -d "${Path}/${Seed}" ]]; then
         Target=${Seed}
     else
         log_msg "UPDATE | using ${Target} as target regions"
-    fi  
+    fi
 elif [[ $(contains_string "${Seed}" ",") = "TRUE" ]]; then
     log_msg "UPDATE | using ${Seed} as seed regions list"
     roi2roi="TRUE"
@@ -95,13 +95,28 @@ if [[ $(contains_string "${Target}" ",") = "TRUE" ]]; then
     roilist="TRUE"
 fi
 
-if [[ ${singleseed} = "TRUE" ]] || [[ ${roilist} = "TRUE" ]]; then
-    if [[ ! -f "${TEMPLATEDIR}/Atlas/${Atlas}.nii.gz" ]]; then
-        log_msg "ERROR | atlas ${Atlas} not found in template directory."
+if [[ ${singleseed} = "TRUE" ]] || [[ ${roilist} = "TRUE" ]] || [[ ${roi2roi} = "TRUE" ]]; then
+    AtlasPaths=()
+    AtlasNames=()
+    IFS=',' read -ra _atlas_entries <<< "${Atlas}"
+    for _atlas_entry in "${_atlas_entries[@]}"; do
+        _atlas_entry=$(echo "${_atlas_entry}" | tr -d ' ')
+        if [[ -f "${TEMPLATEDIR}/Atlas/${_atlas_entry}.nii.gz" ]]; then
+            AtlasPaths+=("${TEMPLATEDIR}/Atlas/${_atlas_entry}.nii.gz")
+            AtlasNames+=("${_atlas_entry}")
+        elif [[ -f "/data/${_atlas_entry}.nii.gz" ]]; then
+            log_msg "UPDATE | atlas ${_atlas_entry} not found in template directory, using /data/${_atlas_entry}.nii.gz"
+            AtlasPaths+=("/data/${_atlas_entry}.nii.gz")
+            AtlasNames+=("${_atlas_entry}")
+        else
+            log_msg "WARNING | atlas ${_atlas_entry} not found in template directory or /data, skipping."
+        fi
+    done
+    if [[ ${#AtlasPaths[@]} -eq 0 ]]; then
+        log_msg "ERROR | no valid atlases found."
         show_usage
-    else
-        Atlas="${TEMPLATEDIR}/Atlas/${Atlas}.nii.gz"
     fi
+    Atlas="${AtlasPaths[0]}"
 fi
 
 if [[ ! -z ${Tracts} ]]; then
@@ -158,17 +173,20 @@ if [[ ${singleseed} = "TRUE" ]]; then
 
     mask="${Path}/${Seed}"
 
-    atlas_name=$( basename ${Atlas%.nii.gz} )
-    disc_file=${OutDir}/${SeedName%.nii.gz}_${atlas_name}.tsv
-
-    # ---- extract disconnectome ---- #
+    # ---- extract tract subset once ---- #
     get_temp_dir ${OutDir}
 
     get_tract_subset ${mask} "${mask%.nii.gz}_subset.tck" ${Tracts}
 
-    get_disonnectome ${OutDir}/$( basename ${mask%.nii.gz} )_subset.tck ${Atlas} ${disc_file}
-
-    add_lut_disconnectome ${atlas_name} ${disc_file}   
+    # ---- extract disconnectome for each atlas ---- #
+    for _i in "${!AtlasPaths[@]}"; do
+        _atlas_path="${AtlasPaths[$_i]}"
+        _atlas_name="${AtlasNames[$_i]}"
+        disc_file=${OutDir}/${SeedName%.nii.gz}_${_atlas_name}.tsv
+        log_msg "UPDATE | extracting disconnectome with atlas ${_atlas_name}"
+        get_disonnectome ${OutDir}/$( basename ${mask%.nii.gz} )_subset.tck ${_atlas_path} ${disc_file}
+        add_lut_disconnectome ${_atlas_name} ${disc_file}
+    done
 
     log_msg "FINISHED | creating disconnectome for ${SeedName}"
 
@@ -212,8 +230,12 @@ if [[ ${roi2roi} = "TRUE" ]]; then
     get_temp_dir ${OutDir}
     log_msg "UPDATE | preparing parcellations for ${Seed}"
     get_parcellation ${Seed}
-    log_msg "UPDATE | preparing parcellations for ${Target}"
-    get_parcellation ${Target}
+    if [[ "${Target}" != "${Seed}" ]]; then
+        log_msg "UPDATE | preparing parcellations for ${Target}"
+        get_parcellation ${Target}
+    else
+        log_msg "UPDATE | Target is the same as Seed, skipping duplicate parcellation"
+    fi
     log_msg "UPDATE | preparing tract mask"
     get_tract_mask ${Seed} ${Target}
     log_msg "UPDATE | creating full parcellation"
@@ -224,7 +246,9 @@ if [[ ${roi2roi} = "TRUE" ]]; then
     log_msg "UPDATE | extracting subset connectome"
     get_roi2roi_sc ${Tracts}
     log_msg "UPDATE | extracting full connectome"
-    get_full_sc ${Tracts}
+    if [[ "${Seed}" != "${Target}" ]]; then
+        get_full_sc ${Tracts}
+    fi
     get_lut ${Seed} ${Target}
     add_lut_sc
 
